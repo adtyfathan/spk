@@ -44,6 +44,57 @@ class ScholarshipController extends Controller
 
     public function calculate(Request $request)
     {
+        // Validate multiple applicants data
+        $validator = Validator::make($request->all(), [
+            'applicants' => 'required|array|min:1',
+            'applicants.*.nama' => 'required|string|max:255',
+            'applicants.*.jurusan' => 'required|string|max:255',
+            'applicants.*.ipk' => 'required|numeric|min:0|max:4',
+            'applicants.*.pengalaman_organisasi' => 'required|integer|min:1|max:4',
+            'applicants.*.penghasilan_orang_tua' => 'required|integer|min:1|max:4',
+            'applicants.*.kontribusi_sosial' => 'required|integer|min:1|max:4',
+            'applicants.*.jumlah_tanggungan' => 'required|integer|min:1|max:4',
+            'applicants.*.semester' => 'required|integer|min:0|max:4',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $results = [];
+        $applicants = $request->input('applicants');
+
+        // Process each applicant
+        foreach ($applicants as $index => $applicantData) {
+            $result = $this->processProfileMatching($applicantData);
+            
+            // Add applicant number for display
+            $result['applicant_number'] = $index + 1;
+            
+            $results[] = $result;
+            
+            // Save each application to database
+            $this->saveApplication($applicantData, $result);
+        }
+
+        // Sort results by total score descending (highest score first)
+        usort($results, function($a, $b) {
+            return $b['total_score'] <=> $a['total_score'];
+        });
+
+        // Add ranking to results
+        foreach ($results as $index => &$result) {
+            $result['rank'] = $index + 1;
+        }
+
+        return view('result', compact('results'));
+    }
+
+    public function calculateSingle(Request $request)
+    {
+        // Keep the original single applicant method for backward compatibility
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
             'jurusan' => 'required|string|max:255',
@@ -94,7 +145,7 @@ class ScholarshipController extends Controller
             'semester' => $requestData['semester'],
             'total_score' => $result['total_score'],
             'eligibility' => $result['eligibility'],
-            'calculation_details' => $result
+            'calculation_details' => json_encode($result)
         ]);
     }
 
@@ -148,14 +199,18 @@ class ScholarshipController extends Controller
         return [
             'nama' => $data['nama'],
             'jurusan' => $data['jurusan'],
+            'original_ipk' => $data['ipk'], // Keep original IPK for display
             'user_profile' => $userProfile,
             'standard_profile' => $this->standardProfile,
             'gaps' => $gaps,
             'gap_values' => $gapValues,
+            'core_factors' => $coreFactors,
+            'secondary_factors' => $secondaryFactors,
             'core_average' => round($coreAverage, 2),
             'secondary_average' => round($secondaryAverage, 2),
             'total_score' => round($totalScore, 2), // This is your main output
-            'eligibility' => $this->determineEligibility($totalScore)
+            'eligibility' => $this->determineEligibility($totalScore),
+            'calculation_timestamp' => now()
         ];
     }
 
@@ -186,10 +241,10 @@ class ScholarshipController extends Controller
                 4 => 'Pernah/Sedang menjadi pengurus di >1 organisasi atau menjabat posisi strategis'
             ],
             'penghasilan_orang_tua' => [
-                1 => '>= 5,000,000',
-                2 => '>= 3,000,000 dan < 5,000,000',
-                3 => '>= 1,500,000 dan < 3,000,000',
-                4 => '< 1,500,000'
+                1 => '>= Rp 5,000,000',
+                2 => 'Rp 3,000,000 - Rp 4,999,999',
+                3 => 'Rp 1,500,000 - Rp 2,999,999',
+                4 => '< Rp 1,500,000'
             ],
             'kontribusi_sosial' => [
                 1 => 'Tidak ada kontribusi sosial yang tercatat',
@@ -198,18 +253,38 @@ class ScholarshipController extends Controller
                 4 => 'Pernah terlibat sebagai panitia inti/koordinator di ≥1 acara kampus/sosial atau volunteer aktif di >1 kegiatan'
             ],
             'jumlah_tanggungan' => [
-                1 => 'Jumlah 1',
-                2 => 'Jumlah 2',
-                3 => 'Jumlah 3',
-                4 => 'Jumlah > 3'
+                1 => '1 orang',
+                2 => '2 orang',
+                3 => '3 orang',
+                4 => '> 3 orang'
             ],
             'semester' => [
-                0 => 'Semester <= 2',
-                1 => 'Semester 3 - 4',
-                2 => 'Semester 5 - 6',
-                3 => 'Semester 7 - 8',
+                0 => 'Semester 1-2',
+                1 => 'Semester 3-4',
+                2 => 'Semester 5-6',
+                3 => 'Semester 7-8',
                 4 => 'Semester > 8'
             ]
+        ];
+    }
+
+    // Helper method to get statistics for multiple applicants
+    public function getCalculationStats($results)
+    {
+        if (empty($results)) {
+            return null;
+        }
+
+        $totalScores = array_column($results, 'total_score');
+        
+        return [
+            'total_applicants' => count($results),
+            'highest_score' => max($totalScores),
+            'lowest_score' => min($totalScores),
+            'average_score' => round(array_sum($totalScores) / count($totalScores), 2),
+            'eligible_count' => count(array_filter($results, function($result) {
+                return in_array($result['eligibility'], ['Sangat Layak', 'Layak']);
+            }))
         ];
     }
 }

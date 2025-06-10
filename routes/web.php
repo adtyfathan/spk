@@ -6,8 +6,10 @@ use Illuminate\Support\Facades\Route;
 
 // Main scholarship routes
 Route::get('/', [ScholarshipController::class, 'index'])->name('scholarship.form');
-Route::post('/calculate', [ScholarshipController::class, 'calculate'])->name('scholarship.calculate');
+
 Route::get('/history', [ScholarshipController::class, 'history'])->name('scholarship.history');
+
+Route::post('/calculate', [ScholarshipController::class, 'calculate'])->name('scholarship.calculate');
 
 // Admin routes (optional)
 Route::prefix('admin')->group(function () {
