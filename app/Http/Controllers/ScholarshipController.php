@@ -123,7 +123,7 @@ class ScholarshipController extends Controller
     public function history()
     {
         $applications = ScholarshipApplication::latest()->paginate(10);
-        return view('scholarship.history', compact('applications'));
+        return view('history', compact('applications'));
     }
 
     public function manageCriteria()

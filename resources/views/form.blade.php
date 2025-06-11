@@ -64,14 +64,11 @@
             <h1 class="text-4xl font-bold text-white mb-4">
                 Sistem Penilaian Beasiswa
             </h1>
-            <p class="text-xl text-white/80">
-                Multiple Applicants - Profile Matching Method
-            </p>
             <div class="w-24 h-1 bg-white/60 mx-auto mt-4 rounded-full"></div>
         </div>
 
         <!-- Control Panel -->
-        <div class="glass-effect rounded-2xl p-6 mb-6 animate-slide-up">
+        <div class="glass-effect rounded-2xl p-6 mb-6 animate-fade-in">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
                     <span class="text-white font-semibold">Total Applicants: <span id="applicantCount">1</span></span>
@@ -120,13 +117,6 @@
                 </button>
             </div>
         </form>
-
-        <!-- Info Section -->
-        <div class="mt-8 text-center animate-fade-in">
-            <p class="text-white/70 text-sm">
-                This system uses Profile Matching method to evaluate scholarship eligibility for multiple applicants simultaneously.
-            </p>
-        </div>
     </div>
 
     <script>
@@ -135,7 +125,7 @@
         // Template for applicant form
         function createApplicantCard(index) {
             return `
-                <div class="glass-effect rounded-2xl p-6 shadow-2xl form-card animate-bounce-in" data-applicant="${index}">
+                <div class="glass-effect rounded-2xl p-6 shadow-2xl form-card animate-fade-in" data-applicant="${index}">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-bold text-white">Applicant #${index + 1}</h3>
                         ${index > 0 ? `

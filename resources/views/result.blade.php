@@ -76,7 +76,7 @@
                             <th class="text-center py-3 px-2">Core Factor</th>
                             <th class="text-center py-3 px-2">Secondary Factor</th>
                             <th class="text-center py-3 px-2">Total Nilai</th>
-                            <th class="text-center py-3 px-2">Status</th>
+                            {{-- <th class="text-center py-3 px-2">Status</th> --}}
                             <th class="text-center py-3 px-2">Aksi</th>
                         </tr>
                     </thead>
@@ -91,7 +91,7 @@
                                 <td class="py-3 px-2 text-center">
                                     <span class="font-bold text-lg">{{ $result['total_score'] }}</span>
                                 </td>
-                                <td class="py-3 px-2 text-center">
+                                {{-- <td class="py-3 px-2 text-center">
                                     <span class="px-3 py-1 rounded-full text-sm font-semibold
                                         @if($result['eligibility'] == 'LAYAK') bg-green-500/20 text-green-300
                                         @elseif($result['eligibility'] == 'PERTIMBANGAN') bg-yellow-500/20 text-yellow-300
@@ -99,7 +99,7 @@
                                         @endif">
                                         {{ $result['eligibility'] }}
                                     </span>
-                                </td>
+                                </td> --}}
                                 <td class="py-3 px-2 text-center">
                                     <button onclick="showDetail({{ $index }})"
                                         class="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 rounded-lg transition-colors">
@@ -115,7 +115,7 @@
 
         <!-- Detail Modal -->
         <div id="detailModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div class="glass-effect rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="glass-effect rounded-xl p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-2xl font-bold text-white">Detail Penilaian</h3>
                     <button onclick="closeModal()" class="text-white/70 hover:text-white text-2xl">&times;</button>
@@ -204,9 +204,69 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-4 gap-6">  
                     <div class="bg-white/5 rounded-lg p-4">
-                        <h5 class="text-lg font-semibold text-white mb-4">Gap Analysis</h5>
+                        <h5 class="text-lg font-semibold text-white mb-4">Profil Mahasiswa</h5>
+                        <div class="space-y-3">
+            `;
+
+            Object.keys(criteriaNames).forEach(key => {
+                if (result.gaps && result.gaps[key] !== undefined) {
+                    content += `
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80 text-sm">${criteriaNames[key]}</span>
+                            <span class="text-white font-semibold">${result.user_profile[key]}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            content += `
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h5 class="text-lg font-semibold text-white mb-4">Profil Standar</h5>
+                        <div class="space-y-3">
+            `;
+
+            Object.keys(criteriaNames).forEach(key => {
+                if (result.gaps && result.gaps[key] !== undefined) {
+                    content += `
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80 text-sm">${criteriaNames[key]}</span>
+                            <span class="text-white font-semibold">${result.standard_profile[key]}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            content += `
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h5 class="text-lg font-semibold text-white mb-4">Gap</h5>
+                        <div class="space-y-3">
+            `;
+
+            Object.keys(criteriaNames).forEach(key => {
+                if (result.gaps && result.gaps[key] !== undefined) {
+                    content += `
+                        <div class="flex justify-between items-center">
+                            <span class="text-white/80 text-sm">${criteriaNames[key]}</span>
+                            <span class="text-white font-semibold">${result.gaps[key]}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            content += `
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <h5 class="text-lg font-semibold text-white mb-4">Nilai Gap</h5>
                         <div class="space-y-3">
             `;
 
@@ -224,27 +284,27 @@
             content += `
                         </div>
                     </div>
-                    
-                    <div class="bg-white/5 rounded-lg p-4">
-                        <h5 class="text-lg font-semibold text-white mb-4">Factor Analysis</h5>
-                        <div class="space-y-4">
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-white/80">Core Factor (60%)</span>
-                                    <span class="text-white font-semibold">${result.core_average.toFixed(2)}</span>
-                                </div>
-                                <div class="w-full bg-white/20 rounded-full h-2">
-                                    <div class="h-2 rounded-full bg-green-500" style="width: ${(result.core_average / 5) * 100}%"></div>
-                                </div>
+                </div>
+                
+                <div class="mt-6 bg-white/5 rounded-lg p-4">
+                    <h5 class="text-lg font-semibold text-white mb-4">Factor Analysis</h5>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-white/80">Core Factor (60%)</span>
+                                <span class="text-white font-semibold">${result.core_average.toFixed(2)}</span>
                             </div>
-                            <div>
-                                <div class="flex justify-between mb-2">
-                                    <span class="text-white/80">Secondary Factor (40%)</span>
-                                    <span class="text-white font-semibold">${result.secondary_average.toFixed(2)}</span>
-                                </div>
-                                <div class="w-full bg-white/20 rounded-full h-2">
-                                    <div class="h-2 rounded-full bg-yellow-500" style="width: ${(result.secondary_average / 5) * 100}%"></div>
-                                </div>
+                            <div class="w-full bg-white/20 rounded-full h-2">
+                                <div class="h-2 rounded-full bg-green-500" style="width: ${(result.core_average / 5) * 100}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-white/80">Secondary Factor (40%)</span>
+                                <span class="text-white font-semibold">${result.secondary_average.toFixed(2)}</span>
+                            </div>
+                            <div class="w-full bg-white/20 rounded-full h-2">
+                                <div class="h-2 rounded-full bg-yellow-500" style="width: ${(result.secondary_average / 5) * 100}%"></div>
                             </div>
                         </div>
                     </div>
